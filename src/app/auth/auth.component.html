@@ -1,0 +1,36 @@
+<div class="row">
+    <div class="col-xs-12 col-md-6 col-md-offset-3">
+        <!-- <div class="alert alert-danger" *ngIf="error">
+            <p>{{error}}</p>
+        </div> -->
+        <!-- <app-alert [message]="error" *ngIf="error" (closeEvent)="onCloseAlert()"></app-alert> -->
+        <ng-template appPlaceholder></ng-template>
+        <div *ngIf="loading" style="text-align: center;">
+            <app-spinner-component ></app-spinner-component>
+        </div>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loading">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" class="form-control" formControlName="email">
+            </div>
+            <div formGroupName="passwords">
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" formControlName="password">
+                </div>
+                <div class="form-group" [ngStyle]="{visibility: isLoginMode ? 'hidden' : 'visible'}">
+                    <label for="reppass">Repeat password</label>
+                    <input type="password" id="reppass" class="form-control" formControlName="repeatpass">
+                </div>
+                <div class="alert alert-danger" *ngIf="passwordsNotEqual && !isLoginMode && form.get('passwords.repeatpass').touched">
+                    <p>Passwords are not equal</p>
+                </div>
+            </div>
+            <div class="row col-xs-12">
+                <button class="btn btn-primary col-xs" type="submit" [disabled]="form.invalid">{{isLoginMode ? 'Login' : 'Sign Up'}} </button>
+                |
+                <button class="btn btn-primary col-xs" type="button" (click)="onSwitchMode()">Switch to {{ isLoginMode ? 'Sign Up':'Login' }}</button>
+            </div>
+        </form>
+    </div>
+</div>
