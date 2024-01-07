@@ -1,7 +1,7 @@
 import { createSelector } from "@ngrx/store";
-import { Ingredient } from "src/app/shared/ingredient.model";
+import { AppState } from "../app.reducer";
 
-export const ingredientsSelector = (state: {shoppingList: Ingredient[]}) => state.shoppingList;
+export const ingredientsSelector = (state: AppState) => state.shoppingList.ingredients;
 
 export const indexIngredientSelector = (index) => createSelector(
     ingredientsSelector,

@@ -13,10 +13,18 @@ export const addMultipleIngredients = createAction(
 
 export const updateIngredient = createAction(
     '[sh-list] update-ingredient',
-    props<{index: number, newItem: Ingredient}>()
+    props<{updatedItem: Ingredient}>()
 );
 
 export const deleteIngredient = createAction(
     '[sh-list] delete-ingredient',
+);
+
+export const startEdit = createAction(
+    '[sh-list] start-edit',
     props<{index: number}>()
+);
+
+export const stopEdit = createAction(
+    '[sh-list] stop-edit',
 );
