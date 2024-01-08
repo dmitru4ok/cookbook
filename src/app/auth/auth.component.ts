@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { AuthServiceService } from './auth-service.service';
 import { Router } from '@angular/router';
@@ -15,7 +15,7 @@ import { Subscription } from 'rxjs';
 export class AuthComponent implements OnInit, OnDestroy{
   isLoginMode: boolean = true;
   form: FormGroup;
-  static passLength = 6;
+  static readonly passLength = 6;
   passwordsNotEqual = false;
   loading = false;
   error: string = null;

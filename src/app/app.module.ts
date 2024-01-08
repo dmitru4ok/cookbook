@@ -9,6 +9,7 @@ import { SharedModule } from './shared/shared.module';
 import { CoreModule } from './core.module';
 import { StoreModule } from '@ngrx/store';
 import { appReducer } from './ngrxStore/app.reducer';
+import { EffectsModule } from '@ngrx/effects';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { appReducer } from './ngrxStore/app.reducer';
     HttpClientModule,
     SharedModule,
     CoreModule,
-    StoreModule.forRoot(appReducer)
+    StoreModule.forRoot(appReducer),
+    EffectsModule.forRoot([])
   ],
   bootstrap: [AppComponent],
   
