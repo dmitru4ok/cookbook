@@ -1,10 +1,11 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
-import { AuthServiceService } from './auth-service.service';
-import { Router } from '@angular/router';
 import { PlaceholderDirective } from '../shared/placeholder.directive';
 import { AlertComponent } from '../alert/alert.component';
 import { Subscription } from 'rxjs';
+import { AppState } from '../ngrxStore/app.reducer';
+import { Store } from '@ngrx/store';
+import * as AuthActions from '../ngrxStore/auth/auth.actions';
 
 
 @Component({
@@ -17,14 +18,14 @@ export class AuthComponent implements OnInit, OnDestroy{
   form: FormGroup;
   static readonly passLength = 6;
   passwordsNotEqual = false;
-  loading = false;
-  error: string = null;
   @ViewChild(PlaceholderDirective) alertPlace: PlaceholderDirective;
   closeSubs: Subscription;
+  storeSub: Subscription;
+  isLoading = false;
+  error: string;
 
   constructor(
-    private authService: AuthServiceService, 
-    private router: Router) {}
+    private store: Store<AppState>) {}
 
   onSwitchMode() {
     this.isLoginMode = !this.isLoginMode;
@@ -38,7 +39,14 @@ export class AuthComponent implements OnInit, OnDestroy{
         'password': new FormControl(null, [Validators.required, Validators.minLength(AuthComponent.passLength)]),
         'repeatpass': new FormControl(null, [this.customValidatorLength.bind(this), this.customValidatorRequired.bind(this)])
       }, this.customValidatorEquality.bind(this)),
-     
+    });
+
+    this.storeSub = this.store.select('auth').subscribe(authState => {
+      this.isLoading = authState.loading;
+      this.error = authState.error;
+      if (this.error) {
+        this.showErrorAlert();
+      }
     });
   }
 
@@ -76,50 +84,23 @@ export class AuthComponent implements OnInit, OnDestroy{
     }
     const email = this.form.value['email'];
     const password = this.form.value['passwords']['password'];
-    this.loading = true;
     
     if (this.isLoginMode) {
-      this.authService.logIn(email, password).subscribe({
-        next: () =>  {
-          this.loading = false;
-          this.router.navigate(['/recipes']);
-        },
-        error: (error: Error) => {
-          console.log(error);
-          // this.error = error.message;
-          this.showErrorAlert(error.message)
-          this.loading = false;
-        }
-      });
+      this.store.dispatch(AuthActions.loginRequestStart({values: {email, password}}));
     } else {
-      this.authService.signUp(email, password).subscribe({
-        next: () =>  {
-          this.loading = false;
-          this.router.navigate(['/recipes']);
-        },
-        error: (error: Error) => {
-          console.log(error);
-          // this.error = error.message;
-          this.showErrorAlert(error.message);
-          this.loading = false;
-        }
-      });
+      this.store.dispatch(AuthActions.signupRequestStart({values: {email, password}}));
     }
     this.form.reset();
   }
 
-  onCloseAlert() {
-    this.error = null;
-  }
-
-  private showErrorAlert(errorMsg: string) {
-    this.error = errorMsg;
+  private showErrorAlert() {
     this.alertPlace.VCR.clear();
     const component = this.alertPlace.VCR.createComponent(AlertComponent);
     component.instance.message = this.error;
     this.closeSubs = component.instance.closeEvent.subscribe(() => {
       this.closeSubs.unsubscribe();
       this.alertPlace.VCR.clear();
+      this.store.dispatch(AuthActions.clearError());
     });
   }
 
@@ -127,5 +108,6 @@ export class AuthComponent implements OnInit, OnDestroy{
     if (this.closeSubs) {
       this.closeSubs.unsubscribe();
     }
+    this.storeSub.unsubscribe();
   }
 }
