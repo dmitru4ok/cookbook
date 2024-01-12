@@ -22,7 +22,7 @@ const MILISECONDS_IN_SEC = 1000;
 
 const handleAuthentication = (response: AuthResponse) => {
     const expirationDate = new Date(new Date().getTime() + +response.expiresIn * MILISECONDS_IN_SEC);
-    return authenticateSuccess({user: new User(response.email, response.localId, response.idToken, expirationDate)}); 
+    return authenticateSuccess({user: new User(response.email, response.localId, response.idToken, expirationDate), redirect: true}); 
 }
 
 const handleError = (errorRes: HttpErrorResponse) => {
@@ -94,7 +94,9 @@ export class AuthEffects {
             ofType(authenticateSuccess),
             tap((data) => {
                 localStorage.setItem('user', JSON.stringify(data.user));
-                this.router.navigate(['/']);
+                if (data.redirect) {
+                    this.router.navigate(['/']);
+                }
             })
         ),
         {dispatch: false}
@@ -130,7 +132,7 @@ export class AuthEffects {
                   if (user.token) {
                     const expirationInMs = new Date(loadedUser._tokenExpirationDate).getTime() -  new Date().getTime();
                     this.authService.setLogoutTimer(expirationInMs);
-                    return authenticateSuccess({user});
+                    return authenticateSuccess({user, redirect: false});
                   }
                   return logout();
             })

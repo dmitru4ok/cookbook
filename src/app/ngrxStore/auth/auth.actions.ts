@@ -4,7 +4,8 @@ import { User } from "src/app/auth/user.model";
 export const authenticateSuccess = createAction(
     '[auth] login',
     props<{ 
-        user: User
+        user: User,
+        redirect: boolean
     }>()
 );
 

@@ -1,26 +1,26 @@
+import { Store } from '@ngrx/store';
 import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+
 import { Recipe } from '../recipe.model';
-import { RecipeService } from '../recipe.service';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { DataStorageService } from 'src/app/shared/data-storage.service';
+import { AppState } from 'src/app/ngrxStore/app.reducer';
+import { recipeSelector } from 'src/app/ngrxStore/recipes/recipe.selectors';
+
 
 @Component({
   selector: 'app-recipe-list',
   templateUrl: './recipe-list.component.html'
 })
 export class RecipeListComponent implements OnInit {
-  recipes: Recipe[];
-  recipeChangedSubscription: Subscription;
-  constructor(private recipeService: RecipeService, private router: Router, private dataService: DataStorageService) {}
+  recipes$: Observable <Recipe[]>;
 
+  constructor(
+    private router: Router, 
+    private store: Store<AppState>) {}
+  
   ngOnInit(): void {
-    this.dataService.fetchRecipes();
-    this.recipes = this.recipeService.recipesArr();
-    this.recipeChangedSubscription = this.recipeService.recipesUpdated.subscribe(
-      () => {
-        this.recipes = this.recipeService.recipesArr();
-    }); 
+    this.recipes$ = this.store.select(recipeSelector);  
   }
 
   onGoToNewRecipe() {

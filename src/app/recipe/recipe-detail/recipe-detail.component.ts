@@ -1,38 +1,35 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Recipe } from '../recipe.model';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { RecipeService } from '../recipe.service';
-import { DataStorageService } from 'src/app/shared/data-storage.service';
 import { Store } from '@ngrx/store';
 import { addMultipleIngredients } from 'src/app/ngrxStore/shopping-list/shopping-list.actions';
+import { AppState } from 'src/app/ngrxStore/app.reducer';
+import { indexRecipeSelector } from 'src/app/ngrxStore/recipes/recipe.selectors';
+import { Subscription, switchMap, tap } from 'rxjs';
+import { deleteRecipe } from 'src/app/ngrxStore/recipes/recipe.actions';
 
 @Component({
   selector: 'app-recipe-detail',
   templateUrl: './recipe-detail.component.html'
 })
-export class RecipeDetailComponent implements OnInit {
+export class RecipeDetailComponent implements OnInit, OnDestroy {
   recipeDetail: Recipe;
   id: number;
+  storageSubs: Subscription;
 
   private route: ActivatedRoute; 
-  private recipeService: RecipeService;
   private router: Router;
-  private dataService: DataStorageService;
-  private store: Store;
-  constructor () {
+  
+  constructor (private store: Store<AppState>) {
     this.route = inject(ActivatedRoute);
-    this.recipeService = inject(RecipeService);
     this.router = inject(Router);
-    this.dataService = inject(DataStorageService);
-    this.store = inject(Store);
-    
   }
   
   ngOnInit(): void { 
-    this.route.params.subscribe((params: Params) => {
-      this.id = +params.id;
-      this.recipeDetail = this.recipeService.getById(this.id);
-    });
+    this.storageSubs = this.route.params.pipe(
+      tap((params: Params) => this.id = +params.id),
+      switchMap(() => this.store.select(indexRecipeSelector(this.id))))
+      .subscribe((data) => this.recipeDetail = data);
   }
 
   addToShoppingList() {
@@ -42,8 +39,11 @@ export class RecipeDetailComponent implements OnInit {
   }
 
   onDeleteRecipe() {
-    this.recipeService.deleteRecipe(this.id); 
-    this.dataService.storeRepices();
+    this.store.dispatch(deleteRecipe({index: this.id}));
     this.router.navigate(['../'], {relativeTo: this.route});
+  }
+
+  ngOnDestroy(): void {
+    this.storageSubs.unsubscribe();
   }
 }

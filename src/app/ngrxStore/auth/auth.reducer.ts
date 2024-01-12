@@ -9,7 +9,7 @@ export type AuthState = {
     error: string
 }
 
-const initialState = {
+const initialState: AuthState = {
     user: null,
     error: null,
     loading: false
@@ -30,6 +30,6 @@ export const authReducer = createReducer(
         return {user: null, loading: false, error: action.authError.message}
     }),
     on(clearError, (state) => {
-        return {...state, error: false};
+        return {...state, error: null};
     })
 );
